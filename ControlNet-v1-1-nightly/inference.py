@@ -13,6 +13,8 @@ args = parser.parse_args()
 dwprocessor = DWposeDetector()
 
 for path in args.input_image:
+    print(f"Processing {path}")
+    
     img = cv.imread(path)[:, :, ::-1]
     detected_map = dwprocessor(img)
 
