@@ -5,16 +5,44 @@ import onnxruntime as ort
 from .onnxdet import inference_detector
 from .onnxpose import inference_pose
 
+
+# Workaround: https://github.com/microsoft/onnxruntime/issues/7846
+def init_session(model_path):
+    EP_list = ['CUDAExecutionProvider', 'CPUExecutionProvider']
+    sess = ort.InferenceSession(model_path, providers=EP_list)
+    return sess
+
+class PickableInferenceSession: # This is a wrapper to make the current InferenceSession class pickable.
+    def __init__(self, model_path):
+        self.model_path = model_path
+        self.sess = init_session(self.model_path)
+
+    def run(self, *args):
+        return self.sess.run(*args)
+
+    def get_inputs(self):
+        return self.sess.get_inputs()
+
+    def get_outputs(self):
+        return self.sess.get_outputs()
+
+    def __getstate__(self):
+        return {'model_path': self.model_path}
+
+    def __setstate__(self, values):
+        self.model_path = values['model_path']
+        self.sess = init_session(self.model_path)
+
 class Wholebody:
-    def __init__(self):
+    def __init__(self, onnx_path):
         device = 'cuda:0'
         providers = ['CPUExecutionProvider'
                  ] if device == 'cpu' else ['CUDAExecutionProvider']
-        onnx_det = 'annotator/ckpts/yolox_l.onnx'
-        onnx_pose = 'annotator/ckpts/dw-ll_ucoco_384.onnx'
+        onnx_det = f'{onnx_path}/yolox_l.onnx'
+        onnx_pose = f'{onnx_path}/dw-ll_ucoco_384.onnx'
 
-        self.session_det = ort.InferenceSession(path_or_bytes=onnx_det, providers=providers)
-        self.session_pose = ort.InferenceSession(path_or_bytes=onnx_pose, providers=providers)
+        self.session_det = PickableInferenceSession(onnx_det)
+        self.session_pose = PickableInferenceSession(onnx_pose)
     
     def __call__(self, oriImg):
         det_result = inference_detector(self.session_det, oriImg)
