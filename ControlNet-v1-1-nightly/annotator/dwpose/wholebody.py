@@ -35,9 +35,6 @@ class PickableInferenceSession: # This is a wrapper to make the current Inferenc
 
 class Wholebody:
     def __init__(self, onnx_path):
-        device = 'cuda:0'
-        providers = ['CPUExecutionProvider'
-                 ] if device == 'cpu' else ['CUDAExecutionProvider']
         onnx_det = f'{onnx_path}/yolox_l.onnx'
         onnx_pose = f'{onnx_path}/dw-ll_ucoco_384.onnx'
 
