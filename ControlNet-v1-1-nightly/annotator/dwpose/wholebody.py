@@ -8,8 +8,15 @@ from .onnxpose import inference_pose
 
 # Workaround: https://github.com/microsoft/onnxruntime/issues/7846
 def init_session(model_path):
-    EP_list = ['CUDAExecutionProvider', 'CPUExecutionProvider']
-    sess = ort.InferenceSession(model_path, providers=EP_list)
+    providers = [
+        ('CUDAExecutionProvider', {
+            'arena_extend_strategy': 'kNextPowerOfTwo',
+            'cudnn_conv_algo_search': 'DEFAULT',
+            'do_copy_in_default_stream': True,
+        }),
+        'CPUExecutionProvider',
+    ]
+    sess = ort.InferenceSession(model_path, providers=providers)
     return sess
 
 class PickableInferenceSession: # This is a wrapper to make the current InferenceSession class pickable.
