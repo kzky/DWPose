@@ -30,9 +30,9 @@ def draw_pose(pose, H, W):
 
 
 class DWposeDetector:
-    def __init__(self):
+    def __init__(self, onnx_path):
 
-        self.pose_estimation = Wholebody()
+        self.pose_estimation = Wholebody(onnx_path)
 
     def __call__(self, oriImg):
         oriImg = oriImg.copy()
