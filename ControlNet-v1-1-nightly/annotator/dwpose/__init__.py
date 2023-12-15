@@ -38,7 +38,7 @@ class DWposeDetector:
         oriImg = oriImg.copy()
         H, W, C = oriImg.shape
         with torch.no_grad():
-            candidate, subset = self.pose_estimation(oriImg)
+            candidate, subset, bbox = self.pose_estimation(oriImg)
             nums, keys, locs = candidate.shape
             candidate[..., 0] /= float(W)
             candidate[..., 1] /= float(H)
@@ -65,4 +65,4 @@ class DWposeDetector:
             bodies = dict(candidate=body, subset=score)
             pose = dict(bodies=bodies, hands=hands, faces=faces)
 
-            return draw_pose(pose, H, W)
+            return draw_pose(pose, H, W), bbox

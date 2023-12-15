@@ -75,6 +75,7 @@ class Wholebody:
         keypoints, scores = keypoints_info[
             ..., :2], keypoints_info[..., 2]
         
-        return keypoints, scores
+        # I guessed that the empty list means a whole
+        return keypoints, scores, det_result
 
 
