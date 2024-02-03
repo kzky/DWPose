@@ -7,22 +7,23 @@ from .onnxpose import inference_pose
 
 
 # Workaround: https://github.com/microsoft/onnxruntime/issues/7846
-def init_session(model_path):
-    providers = [
-        ('CUDAExecutionProvider', {
-            'arena_extend_strategy': 'kNextPowerOfTwo',
-            'cudnn_conv_algo_search': 'DEFAULT',
-            'do_copy_in_default_stream': True,
-        }),
-        'CPUExecutionProvider',
-    ]
+def init_session(model_path, providers=None):
+    if providers is None:
+        providers = [
+            ('CUDAExecutionProvider', {
+                'arena_extend_strategy': 'kNextPowerOfTwo',
+                'cudnn_conv_algo_search': 'DEFAULT',
+                'do_copy_in_default_stream': True,
+            }),
+            'CPUExecutionProvider',
+        ]
     sess = ort.InferenceSession(model_path, providers=providers)
     return sess
 
 class PickableInferenceSession: # This is a wrapper to make the current InferenceSession class pickable.
-    def __init__(self, model_path):
+    def __init__(self, model_path, providers=None):
         self.model_path = model_path
-        self.sess = init_session(self.model_path)
+        self.sess = init_session(self.model_path, providers)
 
     def run(self, *args):
         return self.sess.run(*args)
@@ -41,12 +42,12 @@ class PickableInferenceSession: # This is a wrapper to make the current Inferenc
         self.sess = init_session(self.model_path)
 
 class Wholebody:
-    def __init__(self, onnx_path):
+    def __init__(self, onnx_path, providers=None):
         onnx_det = f'{onnx_path}/yolox_l.onnx'
         onnx_pose = f'{onnx_path}/dw-ll_ucoco_384.onnx'
 
-        self.session_det = PickableInferenceSession(onnx_det)
-        self.session_pose = PickableInferenceSession(onnx_pose)
+        self.session_det = PickableInferenceSession(onnx_det, providers)
+        self.session_pose = PickableInferenceSession(onnx_pose, providers)
     
     def __call__(self, oriImg):
         det_result = inference_detector(self.session_det, oriImg)
