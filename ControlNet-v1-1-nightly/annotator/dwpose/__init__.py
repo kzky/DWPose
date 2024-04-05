@@ -16,6 +16,7 @@ def draw_pose(pose, H, W):
     bodies = pose['bodies']
     faces = pose['faces']
     hands = pose['hands']
+    foot = pose['foot']
     candidate = bodies['candidate']
     subset = bodies['subset']
     canvas = np.zeros(shape=(H, W, 3), dtype=np.uint8)
@@ -25,6 +26,8 @@ def draw_pose(pose, H, W):
     canvas = util.draw_handpose(canvas, hands)
 
     canvas = util.draw_facepose(canvas, faces)
+
+    canvas = util.draw_footpose(canvas, foot) #TODO: optionize
 
     return canvas
 
@@ -63,6 +66,6 @@ class DWposeDetector:
             hands = np.vstack([hands, candidate[:,113:]])
             
             bodies = dict(candidate=body, subset=score)
-            pose = dict(bodies=bodies, hands=hands, faces=faces)
+            pose = dict(bodies=bodies, hands=hands, faces=faces, foot=foot)
 
             return draw_pose(pose, H, W), bbox

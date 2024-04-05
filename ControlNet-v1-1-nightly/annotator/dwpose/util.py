@@ -150,6 +150,35 @@ def draw_facepose(canvas, all_lmks):
     return canvas
 
 
+def draw_footpose(canvas, all_foot_peaks):
+    H, W, C = canvas.shape
+
+    edges = [[0, 2], [1, 2], 
+             [3, 5], [4, 5]
+             ]
+
+    for peaks in all_foot_peaks:
+        peaks = np.array(peaks)
+
+        for ie, e in enumerate(edges):
+            x1, y1 = peaks[e[0]]
+            x2, y2 = peaks[e[1]]
+            x1 = int(x1 * W)
+            y1 = int(y1 * H)
+            x2 = int(x2 * W)
+            y2 = int(y2 * H)
+            if x1 > eps and y1 > eps and x2 > eps and y2 > eps:
+                cv2.line(canvas, (x1, y1), (x2, y2), matplotlib.colors.hsv_to_rgb([ie / float(len(edges)), 1.0, 1.0]) * 255, thickness=2)
+
+        for i, keyponit in enumerate(peaks):
+            x, y = keyponit
+            x = int(x * W)
+            y = int(y * H)
+            if x > eps and y > eps:
+                cv2.circle(canvas, (x, y), 4, (0, 0, 255), thickness=-1)
+    return canvas
+
+
 # detect hand according to body pose keypoints
 # please refer to https://github.com/CMU-Perceptual-Computing-Lab/openpose/blob/master/src/openpose/hand/handDetector.cpp
 def handDetect(candidate, subset, oriImg):
