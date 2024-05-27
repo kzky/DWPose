@@ -37,11 +37,11 @@ class DWposeDetector:
 
         self.pose_estimation = Wholebody(onnx_path, providers)
 
-    def __call__(self, oriImg):
+    def __call__(self, oriImg, only_one_person=False):
         oriImg = oriImg.copy()
         H, W, C = oriImg.shape
         with torch.no_grad():
-            candidate, subset, bbox = self.pose_estimation(oriImg)
+            candidate, subset, bbox = self.pose_estimation(oriImg, only_one_person=only_one_person)
             nums, keys, locs = candidate.shape
             candidate[..., 0] /= float(W)
             candidate[..., 1] /= float(H)

@@ -48,9 +48,15 @@ class Wholebody:
 
         self.session_det = PickableInferenceSession(onnx_det, providers)
         self.session_pose = PickableInferenceSession(onnx_pose, providers)
+
+    def _filter_one_person(self, det_result):
+        areas = [xywh[2] * xywh[3] for xywh in det_result]
+        idx = np.argmax(areas)
+        return np.asarray([det_result[idx]])
     
-    def __call__(self, oriImg):
+    def __call__(self, oriImg, only_one_person=False):
         det_result = inference_detector(self.session_det, oriImg)
+        det_result = self._filter_one_person(det_result) if only_one_person else det_result
         keypoints, scores = inference_pose(self.session_pose, det_result, oriImg)
 
         keypoints_info = np.concatenate(
