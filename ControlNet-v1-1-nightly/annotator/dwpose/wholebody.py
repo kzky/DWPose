@@ -50,6 +50,8 @@ class Wholebody:
         self.session_pose = PickableInferenceSession(onnx_pose, providers)
 
     def _filter_one_person(self, det_result):
+        if len(det_result) == 0:
+            return det_result
         areas = [xywh[2] * xywh[3] for xywh in det_result]
         idx = np.argmax(areas)
         return np.asarray([det_result[idx]])
