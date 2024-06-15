@@ -12,7 +12,7 @@ import numpy as np
 from . import util
 from .wholebody import Wholebody
 
-def draw_pose(pose, H, W):
+def draw_pose(pose, H, W, only_face=False):
     bodies = pose['bodies']
     faces = pose['faces']
     hands = pose['hands']
@@ -21,13 +21,15 @@ def draw_pose(pose, H, W):
     subset = bodies['subset']
     canvas = np.zeros(shape=(H, W, 3), dtype=np.uint8)
 
-    canvas = util.draw_bodypose(canvas, candidate, subset)
-
-    canvas = util.draw_handpose(canvas, hands)
 
     canvas = util.draw_facepose(canvas, faces)
 
-    canvas = util.draw_footpose(canvas, foot) #TODO: optionize
+    if not only_face:
+        canvas = util.draw_bodypose(canvas, candidate, subset)
+
+        canvas = util.draw_handpose(canvas, hands)
+
+        canvas = util.draw_footpose(canvas, foot) #TODO: optionize
 
     return canvas
 
@@ -37,7 +39,7 @@ class DWposeDetector:
 
         self.pose_estimation = Wholebody(onnx_path, providers)
 
-    def __call__(self, oriImg, only_one_person=False):
+    def __call__(self, oriImg, only_one_person=False, only_face=False):
         oriImg = oriImg.copy()
         H, W, C = oriImg.shape
         with torch.no_grad():
@@ -68,4 +70,4 @@ class DWposeDetector:
             bodies = dict(candidate=body, subset=score)
             pose = dict(bodies=bodies, hands=hands, faces=faces, foot=foot)
 
-            return draw_pose(pose, H, W), bbox
+            return draw_pose(pose, H, W, only_face), bbox
